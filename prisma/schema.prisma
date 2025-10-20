@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Report {
+  id             String   @id
+  title          String
+  product        String
+  description    String?
+  generatedAt    DateTime
+  timeRangeStart DateTime
+  timeRangeEnd   DateTime
+  rawPath        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  metrics        Metric[]
+}
+
+model Metric {
+  id          String   @id
+  reportId    String
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  type        String
+  unit        String?
+  isKpi       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dimensions  MetricDimension[]
+  points      MetricPoint[]
+  annotations Annotation[]
+}
+
+model MetricDimension {
+  id       Int    @id @default(autoincrement())
+  metricId String
+  metric   Metric @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  name     String
+  value    String
+}
+
+model MetricPoint {
+  id        Int     @id @default(autoincrement())
+  metricId  String
+  metric    Metric  @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  timestamp DateTime
+  value     Float
+  target    Float?
+  status    String?
+}
+
+model Annotation {
+  id        Int     @id @default(autoincrement())
+  metricId  String
+  metric    Metric  @relation(fields: [metricId], references: [id], onDelete: Cascade)
+  timestamp DateTime
+  note      String
+  author    String?
+}
